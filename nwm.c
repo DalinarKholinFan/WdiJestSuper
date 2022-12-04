@@ -1,138 +1,77 @@
 #include <stdio.h>
 
-
-int ilePol(int n, int tab[n - 1][n - 1]) {
-    int ile = 0, przemian = 0;
-    int ost[2];
-    int chuj = 1;
-    while (chuj != 0) {
-        chuj=0;
-        for (int i = 0; i < n; i++) {
-            for (int j = 0; j < n; j++) {
-                int sum;
-                if (tab[i][j]==1){chuj+=1;}else continue;
-                if(i==0&&j==n-1){sum =tab[i][j-1]+tab[i-1][j];goto there;}
-                if(i==n-1&&j==n-1){sum =tab[i][j-1]+tab[i+1][j];goto there;}
-                if(i==0&&j==0){sum =tab[i][j+1]+tab[i-1][j];goto there;}
-                if(i==n-1&&j==0){sum =tab[i][j+1]+tab[i+1][j];goto there;}
-                if (i==0){sum=tab[i+1][j]+tab[i-1][j]+tab[i][j+1];goto there;}
-                if (j==0){sum=tab[i-1][j]+tab[i][j+1]+tab[i][j-1];goto there;}
-                if (i==n-1){sum=tab[i][j+1]+tab[i][j-1]+tab[i+1][j];goto there;}
-                if (j==n-1){sum=tab[i-1][j]+tab[i+1][j]+tab[i][j-1];goto there;}
-                sum = tab[i][j-1]+tab[i][j + 1]+tab[i - 1][j]+tab[i + 1][j];
-                goto there;
-                there:{
-                if (sum == 0) {
-                    tab[i][j] = 0;
-                    ile += 1;
-                    continue;
+void wyswietlanie(int n, int wieza[3][n]) {
+    int dl = 2 * n;
+    for (int i = n - 1; i >= 0; i--) {
+        for (int a=0;a<3;a++){
+            if (wieza[a][i] == 0 && i>0) { for (int j = 0; j < dl; j++) { if (j == n) { putchar('|'); } else putchar(' '); }}
+            else {
+                for (int j = 0; j < dl; ++j) {
+                    if (i==0){ putchar('=');continue;}
+                    if (j > n-wieza[a][i] && j < dl - n+wieza[a][i]) {
+                        putchar('#');
+                    }
+                    else putchar(' ');
                 }
-                if (sum == 1) {
-                    tab[i][j] = 0;
-                    przemian += 1;
-                } else {
-                    ost[0] = i;
-                    ost[1] = j;
-                }
-                };
-
             }
+            printf("    ");
         }
-        if (przemian==0){tab[ost[0]][ost[1]]=0;}
+        putchar('\n');
     }
-    return ile;
 }
 
+/*algorytm polega na wykonaniu jedynego legalnego ruchu pomiÍdzy parπ wyznaczonych s≥upkÛw, aø do u≥oøenia wieøy*/
+void ukladanie(int n, int wieza[3][n]) {
+    int algorytm[] = {0, 1, 0, 2, 1, 2};//algorytm dla liczb parzystych
+    if (n % 2 == 0) {
+        algorytm[1] = 2;
+        algorytm[3] = 1;
+    } //zmiana algorytmu na ten pasujπcy do liczb nieparzystych
+    int wysokosci[] = {n - 1, 0, 0};//jakπ wyskokoúÊ majπ poszczegÛlne s≥upki
+    int i = 0;
+    while (wysokosci[2] != n - 1) {
+        int slupek1 = algorytm[i % 6];//wyznacza parÍ s≥upkÛw na na ktÛrych prze≥oøymy krπøek
+        int slupek2 = algorytm[i % 6 + 1];
+        int wyskokosc1Slupka = wysokosci[slupek1];
+        int wysokosc2Slupka = wysokosci[slupek2];//przypoøπdkowanie zmiennym, aby choÊ troszkÍ uczytelniÊ kod
+        //sprawdza na ktÛrym s≥upku jest wiÍkszy krπøek a nastÍpnie je podmienia, oraz aktualizuje wysokoúÊ s≥upkÛw
+        if (wieza[slupek1][wyskokosc1Slupka] > wieza[slupek2][wysokosc2Slupka] && wieza[slupek2][wysokosc2Slupka]) {
+            if (wysokosc2Slupka == 0) { wieza[slupek1][wyskokosc1Slupka] = wieza[slupek2][wysokosc2Slupka]; }
+            else { wieza[slupek1][wyskokosc1Slupka + 1] = wieza[slupek2][wysokosc2Slupka]; }
+            wieza[slupek2][wysokosc2Slupka] = 0;
+            wysokosci[slupek2] -= 1;
+            wysokosci[slupek1] += 1;
+        } else {
+            if (wyskokosc1Slupka == 0) {
+                wieza[slupek1][wyskokosc1Slupka + 1] = wieza[slupek2][wysokosc2Slupka];
+                wysokosci[slupek1] += 1;
+                wieza[slupek2][wysokosc2Slupka] = 0;
+                wysokosci[slupek2] -= 1;
+                i += 2;
+                while(getchar() != '\n');
+                wyswietlanie(n, wieza);
+                continue;
+            } else { wieza[slupek2][wysokosc2Slupka + 1] = wieza[slupek1][wyskokosc1Slupka]; }
+            wieza[slupek1][wyskokosc1Slupka] = 0;
+            wysokosci[slupek1] -= 1;
+            wysokosci[slupek2] += 1;
+        }
+        while(getchar() != '\n');
+        wyswietlanie(n, wieza);
+        i += 2;
+    }
 
+}
 int main() {
-    int lozl;
-    int abc = 0;
-    while ((lozl = getchar()) != '\n') {
-        abc += (lozl - 48);
-        abc *= 10;
-    }
-    abc /= 10;
-    int zdj[abc][abc];
-    /* stworzenie i uzupe≈Çnienie tablicy 0 i 1*/ for (int i = 0; i < abc; i++) {
-        int par = 0;
-        while ((lozl = getchar()) != '\n') {
-            if (lozl == ' ') { continue; }
-            zdj[i][par] = lozl - '0';
-            par += 1;
+    int n;
+    scanf("%d", &n);
+    int slupki[3][n + 1];
+    for (int i = 0; i < 3; ++i) {
+        for (int j = 0; j < n + 1; ++j) {
+            if (i == 0 && j > 0) { slupki[i][j] = n - j + 1; } else { slupki[i][j] = 0; }
         }
-    }
-    int par = 0;
-    int lolz = 1;
-    int naj1 = 0;
-    int naj2 = 0;
-    int teraz1 = 0;
-    int teraz2 = 0;
-    for (int i = 0; i < abc; i++) {
-        for (int j = 0; j < abc; j++) {
-            if (zdj[i][j] == 1) {
-                teraz1 += 1;
-                if (teraz1 > naj1) { naj1 = teraz1; }
-            } else teraz1 = 0;
-            if (zdj[i][par] == 1) {
-                teraz2 += 1;
-                if (teraz2 > naj2) { naj2 = teraz2; }
-            } else teraz2 = 0;
-            lozl += 1;
-            par += lolz;
-        }
-        par -= lolz;
-        lolz *= -1;
-    }
-    lolz = 1;
-    int x = 1;
-    int y = 0;
-    int ile = 0;
-    int pop = zdj[0][0];
-    int ciag = 0;
-    int maks = 0;
-    for (int qwe = 0; qwe <= (abc * abc) - 2; qwe++) {
-        if (zdj[y][x] == 1 && pop == 0) {
-            ciag = 1;
-            goto there;
-        }
-        if (zdj[y][x] == 1 && pop == 1) {
-            ciag += 1;
-            goto there;
-        }
-        if (pop == 1 && zdj[y][x] == 0) {
-            if (ciag > maks) { maks = ciag; }
-            ile += 1;
-            goto there;
-        }
-        there:
-        {
-            pop = zdj[y][x];
-            x -= lolz;
-            y += lolz;
-            if (y < 0 || x < 0 || x > abc - 1 || y > abc - 1) {
-                if (x > abc - 1) {
-                    x -= 1;
-                    y += 2;
-                    lolz *= -1;
-                    continue;
-                }
-                if (y > abc - 1) {
-                    y -= 1;
-                    x += 2;
-                    lolz *= -1;
-                    continue;
-                }
-                if (x == -1) { x += 1; }
-                if (y == -1) { y += 1; }
-                lolz *= -1;
-            }
-        }
-        lozl += 1;
-    }
-    printf("%d %d %d\n", naj1, naj2, maks);
-    if (abc % 3 == 0 && abc > 6) {
-        printf("%d\n", ilePol(abc, zdj));
-    }
-
+    }/*tworzenie podstawowej wieøy*/
+    n += 1;
+    ukladanie(n, slupki);
+    return 0;
 }
-
